@@ -1,0 +1,70 @@
+{
+  "name": "ember-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "clsx": "^2.1.1",
+    "next": "^14.2.35",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "socket.io-client": "^4.7.4",
+    "uuid": "^9.0.1",
+    "zustand": "^4.5.2"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/react": "^15.0.2",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.2.73",
+    "@types/react-dom": "^18.2.22",
+    "@types/uuid": "^9.0.8",
+    "autoprefixer": "^10.4.27",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^27.0.0",
+    "postcss": "^8.5.9",
+    "tailwindcss": "^3.4.19",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.2"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFiles": [
+      "<rootDir>/jest.setup.ts"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+      "^next/image$": "<rootDir>/src/__mocks__/next-image.tsx",
+      "^next/navigation$": "<rootDir>/src/__mocks__/next-navigation.ts"
+    },
+    "transform": {
+      "^.+\\.(t|j)sx?$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "jsx": "react-jsx"
+          }
+        }
+      ]
+    },
+    "testRegex": ".*\\.spec\\.(ts|tsx)$",
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/app/**/page.tsx",
+      "!src/app/**/layout.tsx"
+    ]
+  }
+}
