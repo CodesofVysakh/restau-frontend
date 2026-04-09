@@ -1,4 +1,4 @@
-# Ember Web — Next.js Frontend
+# Next.js Frontend
 
 ## Quick start (Docker)
 
