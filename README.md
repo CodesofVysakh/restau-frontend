@@ -9,7 +9,7 @@ docker-compose up --build
 ```
 
 - Customer app → http://localhost:3000/menu
-- Kitchen → http://localhost:3000/kitchen/dashboard
+- Kitchen → http://localhost:3000/dashboard
 
 ## Local development
 
@@ -41,8 +41,8 @@ npm run test:cov      # with coverage report
 | `/menu` | Browse menu, filter, add to cart |
 | `/cart` | Review order, pay (mock) |
 | `/track/:orderId` | Real-time order tracker (WebSocket) |
-| `/kitchen/login` | Admin JWT login |
-| `/kitchen/dashboard` | Live kanban order board |
+| `/login` | Admin JWT login |
+| `/dashboard` | Live kanban order board |
 
 ## Key features
 

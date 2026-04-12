@@ -22,7 +22,7 @@ export default function KitchenDashboard() {
 
     useEffect(() => {
         if (!isAuthenticated || !token) {
-            router.replace("/kitchen/login");
+            router.replace("/login");
             return;
         }
         api.useToken(token);

@@ -22,7 +22,7 @@ export default function KitchenLogin() {
             const { accessToken, username } = res;
             setAuth(accessToken, username);
             api.useToken(accessToken);
-            router.push("/kitchen/dashboard");
+            router.push("/dashboard");
         } catch (e: any) {  
             setErr(e.message ?? "Login failed");
         } finally {
