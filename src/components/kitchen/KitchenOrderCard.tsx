@@ -26,9 +26,11 @@ const NEXT_LABEL: Record<OrderStatus, string> = {
 export function KitchenOrderCard({
     order,
     onAdvance,
+    showTableLabel = true,
 }: {
     order: Order;
     onAdvance: (id: string, s: string) => Promise<void>;
+    showTableLabel?: boolean;
 }) {
     const [busy, setBusy] = useState(false);
     const [err, setErr] = useState("");
@@ -65,9 +67,11 @@ export function KitchenOrderCard({
                 <div className="flex items-center gap-2">
                     <span className="text-lg">{STATUS_ICON[order.status]}</span>
                     <div>
-                        <p className="font-bold text-sm">
-                            Table {order.tableNumber}
-                        </p>
+                        {showTableLabel && (
+                            <p className="font-bold text-sm">
+                                Table {order.tableNumber}
+                            </p>
+                        )}
                         <p className="text-xs text-stone-400">
                             #{order.id.slice(0, 8).toUpperCase()} ·{" "}
                             {timeAgo(order.placedAt)}
@@ -95,8 +99,10 @@ export function KitchenOrderCard({
                         <span className="w-5 h-5 bg-[#C8410A] text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                             {item.quantity}
                         </span>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium">{item.name}</p>
+                        <div className="flex-1 min-w-0 text-black">
+                            <p className="text-sm font-medium">
+                                {item.menuItem.name}
+                            </p>
                             {item.customizations.map((c) => (
                                 <p
                                     key={c.id}

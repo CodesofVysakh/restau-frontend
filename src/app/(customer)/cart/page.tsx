@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useCartStore, useUiStore } from "@/store";
 import { useCart } from "@/hooks";
 import { api } from "@/lib/api";
-import { getSessionId, formatPrice } from "@/lib/session";
+import { getSessionId, formatPrice, persistOrderId } from "@/lib/session";
 import { Button } from "@/components/ui/Button";
 
 type Step = "review" | "payment" | "processing";
@@ -49,8 +49,9 @@ export default function CartPage() {
                 tableNumber,
                 cardLastFour: card,
             });
+            persistOrderId(order.id);
             clearCart();
-            router.push(`/track/${order.id}`);
+            router.push("/orders");
         } catch (e: any) {
             setErr(e.message ?? "Order failed. Please try again.");
             setStep("payment");

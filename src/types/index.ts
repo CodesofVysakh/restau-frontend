@@ -102,12 +102,17 @@ export interface OrderItemCustomizationDetail {
     label: string;
     priceDelta: number;
 }
+export interface MenuItem {
+    imageUrl: string;
+    name: string;
+}
 export interface OrderItemDetail {
     id: string;
     menuItemId: string;
     name: string;
     imageUrl: string;
     quantity: number;
+    menuItem: MenuItem;
     unitPrice: number;
     specialInstructions?: string;
     customizations: OrderItemCustomizationDetail[];
@@ -152,6 +157,6 @@ export interface WsOrderStatusPayload {
 }
 
 export interface LoginResponse {
-  accessToken: string;
-  username: string;
-};
+    accessToken: string;
+    username: string;
+}

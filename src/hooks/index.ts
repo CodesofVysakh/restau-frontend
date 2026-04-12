@@ -1,7 +1,11 @@
 "use client";
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback, useState, useRef } from "react";
 import { api } from "@/lib/api";
-import { getSessionId } from "@/lib/session";
+import {
+    getSessionId,
+    persistOrderId,
+    getPersistedOrderIds,
+} from "@/lib/session";
 import {
     joinOrderRoom,
     joinKitchenRoom,
@@ -211,4 +215,130 @@ export function useKitchenOrders() {
     );
 
     return { orders, isLoading, error, advanceStatus };
+}
+
+// ── useSessionOrders ──────────────────────────────────────────────────────────
+// Fetches ALL orders for this session — both from the API (by sessionId) and
+// from localStorage-persisted order IDs (handles session resets).
+// Joins a WebSocket room for each active order so status updates are live.
+
+export function useSessionOrders() {
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [isLoading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    // Track which order rooms we've already joined to avoid duplicates
+    const joinedRooms = useRef<Set<string>>(new Set());
+
+    const updateOrderStatus = useCallback((orderId: string, status: string) => {
+        setOrders((prev) =>
+            prev.map((o) =>
+                o.id === orderId
+                    ? {
+                          ...o,
+                          status: status as any,
+                          statusHistory: [
+                              ...o.statusHistory,
+                              {
+                                  id: Date.now().toString(),
+                                  status: status as any,
+                                  changedAt: new Date().toISOString(),
+                              },
+                          ],
+                      }
+                    : o,
+            ),
+        );
+    }, []);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        async function load() {
+            setLoading(true);
+            try {
+                const sessionId = getSessionId();
+
+                // Fetch orders by session from API
+                const sessionOrders = await api.getOrdersBySession(sessionId);
+
+                // Also fetch any persisted order IDs that might belong to a previous session
+                const persistedIds = getPersistedOrderIds();
+                const sessionIds = new Set(sessionOrders.map((o) => o.id));
+                const orphanIds = persistedIds.filter(
+                    (id) => !sessionIds.has(id),
+                );
+
+                // Fetch orphaned orders individually
+                const orphanOrders = await Promise.allSettled(
+                    orphanIds.map((id) => api.getOrder(id)),
+                ).then((results) =>
+                    results
+                        .filter(
+                            (r): r is PromiseFulfilledResult<Order> =>
+                                r.status === "fulfilled",
+                        )
+                        .map((r) => r.value),
+                );
+
+                if (cancelled) return;
+
+                // Merge, deduplicate, sort newest first
+                const all = [...sessionOrders, ...orphanOrders];
+                const deduped = Array.from(
+                    new Map(all.map((o) => [o.id, o])).values(),
+                ).sort(
+                    (a, b) =>
+                        new Date(b.placedAt).getTime() -
+                        new Date(a.placedAt).getTime(),
+                );
+
+                setOrders(deduped);
+
+                // Persist all IDs we found
+                deduped.forEach((o) => persistOrderId(o.id));
+            } catch (e: any) {
+                if (!cancelled) setError(e.message);
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        }
+
+        load();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    // Join WebSocket rooms for all active orders and subscribe to status updates
+    useEffect(() => {
+        const activeOrders = orders.filter((o) => o.status !== "COMPLETED");
+
+        activeOrders.forEach((o) => {
+            if (!joinedRooms.current.has(o.id)) {
+                joinOrderRoom(o.id);
+                joinedRooms.current.add(o.id);
+            }
+        });
+
+        const off = onOrderStatus((payload: WsOrderStatusPayload) => {
+            updateOrderStatus(payload.orderId, payload.status);
+        });
+
+        return off;
+    }, [orders, updateOrderStatus]);
+
+    // Group orders by table number
+    const ordersByTable = orders.reduce<Record<string, Order[]>>(
+        (acc, order) => {
+            const table = order.tableNumber || "Unknown";
+            if (!acc[table]) acc[table] = [];
+            acc[table].push(order);
+            return acc;
+        },
+        {},
+    );
+
+    const activeCount = orders.filter((o) => o.status !== "COMPLETED").length;
+
+    return { orders, ordersByTable, isLoading, error, activeCount };
 }

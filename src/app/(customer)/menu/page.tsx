@@ -79,6 +79,12 @@ export default function MenuPage() {
                             <span>Cart</span>
                         )}
                     </button>
+                    <button
+                        onClick={() => router.push("/orders")}
+                        className="text-stone-400 hover:text-white text-xs transition-colors whitespace-nowrap"
+                    >
+                        My orders
+                    </button>
                 </div>
             </header>
 

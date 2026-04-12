@@ -10,6 +10,36 @@ export function getSessionId(): string {
     }
     return id;
 }
+// ── Order ID persistence ──────────────────────────────────────────────────────
+// Stores placed order IDs in localStorage independently of the session UUID.
+// Survives session resets so customers can still see their orders.
+const ORDERS_KEY = "ember_order_ids";
+
+export function persistOrderId(orderId: string): void {
+    if (typeof window === "undefined") return;
+    const existing = getPersistedOrderIds();
+    if (!existing.includes(orderId)) {
+        localStorage.setItem(
+            ORDERS_KEY,
+            JSON.stringify([...existing, orderId]),
+        );
+    }
+}
+
+export function getPersistedOrderIds(): string[] {
+    if (typeof window === "undefined") return [];
+    try {
+        return JSON.parse(localStorage.getItem(ORDERS_KEY) ?? "[]");
+    } catch {
+        return [];
+    }
+}
+
+export function clearPersistedOrderIds(): void {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(ORDERS_KEY);
+}
+
 export function formatPrice(n: number): string {
     return new Intl.NumberFormat("en-US", {
         style: "currency",
